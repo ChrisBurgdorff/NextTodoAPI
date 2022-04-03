@@ -1,12 +1,12 @@
-module.exports = (sequelize, Sequelize) => {
-  const Role = sequelize.define("roles", {
+module.exports = (sequelize, DataTypes) => {
+  const Role = sequelize.define("Role", {
     id: {
-      type: Sequelize.INTEGER,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
     },
     name: {
-      type: Sequelize.STRING
+      type: DataTypes.STRING
     }
   });
   return Role;

@@ -7,6 +7,7 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
+var appConfig = require('../config');
 
 let sequelize;
 if (config.use_env_variable) {
@@ -33,5 +34,20 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+db.user = require('../models/User')(sequelize, Sequelize);
+db.role = require('../models/Role')(sequelize, Sequelize);
+db.role.belongsToMany(db.user, {
+  through: "user_roles",
+  foreignKey: "roleId",
+  otherKey: "userId"
+});
+db.user.belongsToMany(db.role, {
+  through: "user_roles",
+  foreignKey: "userId",
+  otherKey: "roleId",
+  as: "roles"
+});
+db.ROLES = appConfig.ROLES;
 
 module.exports = db;
