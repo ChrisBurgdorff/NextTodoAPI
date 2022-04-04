@@ -42,7 +42,7 @@ app.get('/', function(req, res) {
 //Connect to DB and start server
 db.sequelize.sync().then((req) =>{
   app.listen(process.env.port || 3001, function() {
-    initDb();
+    //initDb();
     console.log("Listening on " + (process.env.port || 3001));    
   });
 });
@@ -116,7 +116,7 @@ app.put('/api/todo/:id', (req, res) => {
   });
 });
 
-//AUTH Routes
+//AUTH Routes Auth
 app.post('/api/auth/register', 
   [
     verifySignup.checkDuplicateUser,
@@ -129,16 +129,6 @@ app.post('/api/auth/register',
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)   
   }).then(user => {
-    console.log("HERE IS USER");
-    console.log(user.dataValues);
-
-    console.log("LOOK FOR setRoles");
-    console.log(Object.getOwnPropertyNames(user).filter(function (p) {
-      return typeof user[p] === 'function';
-    }));
-    console.log("END SEARCH FOR SET ROLES");
-
-
     if (req.body.roles) {
       Role.findAll({
         where: {
@@ -147,13 +137,13 @@ app.post('/api/auth/register',
           }
         }
       }).then(roles => {
-        user.setRoles(roles).then(() => {
+        user.addRole(roles).then(() => {
           res.send({ message: "User was registered successfully!" });
         });
       });
     } else {
       // user role = 1
-      user.setRoles([1]).then(() => {
+      user.addRole([1]).then(() => {
         res.send({ message: "User was registered successfully!" });
       });
     }
