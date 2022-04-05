@@ -40,17 +40,21 @@ app.get('/', function(req, res) {
 });
 
 //Connect to DB and start server
-db.sequelize.sync().then((req) =>{
+db.sequelize.sync({force: true}).then((req) =>{
   app.listen(process.env.port || 3001, function() {
-    //initDb();
+    initDb();
     console.log("Listening on " + (process.env.port || 3001));    
   });
 });
 
 //Initialize Basic DB Data
 function initDb() {
-  Role.create({name: "user"});
-  Role.create({name: "admin"});
+  Role.create({name: "user"}).catch(err => {
+    console.log(err.message);
+  });
+  Role.create({name: "admin"}).catch(err => {
+    console.log(err.message);
+  });
 }
 
 //TODO Routes
@@ -116,6 +120,16 @@ app.put('/api/todo/:id', (req, res) => {
   });
 });
 
+//HELPER FUNCTIONS
+function getAllPropertyNames(obj) {
+  var result = [];
+  while (obj) {
+    result.push.apply(result, Object.getOwnPropertyNames(obj));
+    obj = Object.getPrototypeOf(obj);
+  }
+  return result;
+}
+
 //AUTH Routes Auth
 app.post('/api/auth/register', 
   [
@@ -137,7 +151,11 @@ app.post('/api/auth/register',
           }
         }
       }).then(roles => {
-        user.addRole(roles).then(() => {
+        console.log("CHECK RIGHT HERE");
+        console.log(getAllPropertyNames(user));
+        console.log("END OF CHECK RIGHT HERE");
+        
+        user.setRoles(roles).then(() => {
           res.send({ message: "User was registered successfully!" });
         });
       });

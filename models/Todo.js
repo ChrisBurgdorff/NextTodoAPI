@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Todo = sequelize.define("Todo", {
-    id: {
+    todo_id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
