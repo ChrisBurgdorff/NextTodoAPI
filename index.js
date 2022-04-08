@@ -55,6 +55,12 @@ function initDb() {
   Role.create({name: "admin"}).catch(err => {
     console.log(err.message);
   });
+
+  Todo.belongsTo(User);
+  User.hasMany(Todo);
+  User.belongsToMany(Role, {through: "user_roles"});
+  Role.belongsToMany(User, {through: "user_roles"});
+
 }
 
 //TODO Routes
@@ -69,7 +75,7 @@ app.get('/api/todo', (req, res) => {
   });
 });
 
-app.post('/api/todo', (req, res) => {
+app.post('/api/todo', (req, res) => { //TODO Add setUser(with incoming User ID)
   console.log(req.body);
     Todo.create({
       description: req.body.description,
@@ -143,29 +149,10 @@ app.post('/api/auth/register',
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)   
   }).then(user => {
-    if (req.body.roles) {
-      Role.findAll({
-        where: {
-          name: {
-            [Op.or]: req.body.roles
-          }
-        }
-      }).then(roles => {
-        console.log("CHECK RIGHT HERE");
-        console.log(getAllPropertyNames(user));
-        console.log("END OF CHECK RIGHT HERE");
-        
-        user.setRoles(roles).then(() => {
-          res.send({ message: "User was registered successfully!" });
-        });
-      });
-    } else {
-      // user role = 1
       user.addRole([1]).then(() => {
         res.send({ message: "User was registered successfully!" });
       });
-    }
-  })
+    })
   .catch(err => {
     console.log(err);
     res.status(500).send({ message: err.message });
