@@ -151,6 +151,8 @@ app.post('/api/auth/register',
   }).then(user => {
       user.addRole([1]).then(() => {
         res.send({ message: "User was registered successfully!" });
+      }).catch((err) => {
+        res.status(500).send({message: err.message});
       });
     })
   .catch(err => {
