@@ -143,8 +143,6 @@ app.post('/api/auth/register',
     verifySignup.checkRolesExist
   ], 
   (req, res) => {
-    
-
   User.create({
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)   
@@ -194,6 +192,20 @@ app.post('/api/auth/login', (req, res) => {
     });
   }).catch(err => {
     res.status(500).send({message: err.message});
+  });
+});
+
+
+app.get('/api/user/:id',  (req, res) => {
+  User.findAll({
+    where: { 
+      id: req.params.id
+    }
+  }).then(user => {
+    console.log(user);
+    return res.statusCode(200).send(user);
+  }).catch(err =>{
+    res.send(err);
   });
 });
 
