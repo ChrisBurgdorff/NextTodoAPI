@@ -10,6 +10,7 @@ const Op = db.Sequelize.Op;
 const { Todo, User, Role } = require('./models');
 //const Role = require('./models/Role');
 const { verifySignUp, verifySignup, authJwt } = require("./middleware");
+const e = require('express');
 
 /*
 Installed packages: express, mysql2, sequelize, sequelize-cli, path, fs, cors, jsonwebtoken, bcryptjs
@@ -195,6 +196,15 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
+app.post('/api/auth/logout', (req, res) => {
+  try {
+    res.clearCookie("TodoJWT");
+    res.status(200).send({message: "Successfully Logged Out"});
+  } catch (err) {
+    res.send({message: err.message});
+  }
+});
+
 
 app.get('/api/user/:id',  (req, res) => {
   User.findAll({
@@ -203,7 +213,7 @@ app.get('/api/user/:id',  (req, res) => {
     }
   }).then(user => {
     console.log(user);
-    return res.statusCode(200).send(user);
+    return res.status(200).send(user);
   }).catch(err =>{
     res.send(err);
   });
