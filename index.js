@@ -77,7 +77,7 @@ app.get('/api/todo', (req, res) => {
 });
 
 app.post('/api/todo', (req, res) => { //TODO Add setUser(with incoming User ID)
-  console.log(req.body);
+
     Todo.create({
       description: req.body.description,
       done: req.body.done || false
@@ -117,12 +117,8 @@ app.put('/api/todo/:id', (req, res) => {
   Todo.update(req.body, {
     where: { id: id }
   }).then(todo => {
-    console.log("RESPONSE FROM PUTT");
-    console.log(todo);
     res.send(todo);
   }).catch(err => {
-    console.log("RESPONSE FROM PUT ERROR");
-    console.log(err);
     res.send(err);
   });
 });
@@ -212,10 +208,40 @@ app.get('/api/user/:id',  (req, res) => {
       id: req.params.id
     }
   }).then(user => {
-    console.log(user);
     return res.status(200).send(user);
   }).catch(err =>{
     res.send(err);
+  });
+});
+
+app.get('/api/currentuser', (req, res) =>{
+  console.log('in request');
+  
+  let token = req.headers["x-access-token"];
+  console.log(token);
+  if (!token) {
+    return res.status(403).send({
+      message: "No token provided"
+    });
+  }
+  jwt.verify(token, appConfig.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({
+        message: "Unauthorized"
+      });
+    }
+    //console.log()
+    const userId = decoded.id;
+    User.findAll({
+      where: { 
+        id: userId
+      }
+    }).then(user => {
+      console.log(user);
+      return res.status(200).send(user);
+    }).catch(err =>{
+      res.send(err);
+    });
   });
 });
 
@@ -228,6 +254,7 @@ app.get("/api/test/all", (req, res) => {
 });
 
 app.get("/api/test/user", [authJwt.verifyToken], (req, res) => {
+  console.log(req.userId);
   res.status(200).send({
     message: "Reached authenticated endpoint"
   }).catch(err => {
