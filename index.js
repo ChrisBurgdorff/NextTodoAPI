@@ -145,14 +145,14 @@ app.post('/api/auth/register',
     password: bcrypt.hashSync(req.body.password, 10)   
   }).then(user => {
       user.addRole([1]).then(() => {
-        res.send({ message: "User was registered successfully!" });
+        return res.send({ message: "User was registered successfully!" });
       }).catch((err) => {
-        res.status(500).send({message: err.message});
+        return res.status(500).send({message: err.message});
       });
     })
   .catch(err => {
     console.log(err);
-    res.status(500).send({ message: err.message });
+    return res.status(500).send({ message: err.message });
   });
 });
 
@@ -215,19 +215,17 @@ app.get('/api/user/:id',  (req, res) => {
 });
 
 app.get('/api/currentuser', (req, res) =>{
-  console.log('in request');
   
   let token = req.headers["x-access-token"];
-  console.log(token);
   if (!token) {
-    return res.status(403).send({
+    return res.status(200).send({
       message: "No token provided"
     });
   }
   jwt.verify(token, appConfig.JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).send({
-        message: "Unauthorized"
+      return res.status(200).send({
+        message: "Token invalid"
       });
     }
     //console.log()
@@ -237,10 +235,9 @@ app.get('/api/currentuser', (req, res) =>{
         id: userId
       }
     }).then(user => {
-      console.log(user);
       return res.status(200).send(user);
     }).catch(err =>{
-      res.send(err);
+      res.status(500).send(err.message);
     });
   });
 });
@@ -254,7 +251,6 @@ app.get("/api/test/all", (req, res) => {
 });
 
 app.get("/api/test/user", [authJwt.verifyToken], (req, res) => {
-  console.log(req.userId);
   res.status(200).send({
     message: "Reached authenticated endpoint"
   }).catch(err => {
