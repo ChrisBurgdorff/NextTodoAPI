@@ -61,7 +61,6 @@ function initDb() {
   User.hasMany(Todo);
   User.belongsToMany(Role, {through: "user_roles"});
   Role.belongsToMany(User, {through: "user_roles"});
-
 }
 
 //TODO Routes
@@ -76,10 +75,25 @@ app.get('/api/todo', (req, res) => {
   });
 });
 
-app.post('/api/todo', (req, res) => { //TODO Add setUser(with incoming User ID)
+app.get('/api/user/:id/todo', (req,res) => {
+  Todo.findAll({
+    where: { 
+      UserId: req.params.id
+    }
+  }).then((todos) => {
+    res.send(todos);
+  }).catch(err => {
+    if (err) {
+      console.log(err);
+      res.send({message: err.message})
+    }
+  });
+});
 
+app.post('/api/todo', (req, res) => { //TODO Add setUser(with incoming User ID)
     Todo.create({
       description: req.body.description,
+      UserId: req.body.UserId,
       done: req.body.done || false
     }).then(todo => {
       res.send(todo);
@@ -91,7 +105,7 @@ app.post('/api/todo', (req, res) => { //TODO Add setUser(with incoming User ID)
 app.delete('/api/todo/:id', (req, res) => {
   Todo.destroy({
     where: {
-      id: req.params.id
+      todo_id: req.params.id
     }
   }).then(todo => {
     res.json({message: "Success"});
@@ -115,7 +129,7 @@ app.get('/api/todo/:id', (req, res) => {
 app.put('/api/todo/:id', (req, res) => {
   const id = req.params.id;
   Todo.update(req.body, {
-    where: { id: id }
+    where: { todo_id: id }
   }).then(todo => {
     res.send(todo);
   }).catch(err => {
@@ -142,6 +156,7 @@ app.post('/api/auth/register',
   (req, res) => {
   User.create({
     email: req.body.email,
+    name: req.body.name,
     password: bcrypt.hashSync(req.body.password, 10)   
   }).then(user => {
       user.addRole([1]).then(() => {
@@ -183,6 +198,7 @@ app.post('/api/auth/login', (req, res) => {
       res.status(200).send({
         id: user.id,
         email: user.email,
+        name: user.name,
         roles: authorities,
         accessToken: token
       });
